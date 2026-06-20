@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Calcetto5" />
+<meta name="theme-color" content="#0a0f0a" />
+<title>Calcetto5 - Gestione Torneo</title>
+<style>
+  :root {
+    --green: #00c853; --green2: #009624;
+    --dark: #0a0f0a; --card: #111811; --border: #1f2e1f;
+    --muted: #4a5e4a; --text: #e8f5e8; --accent: #ffe500;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { margin:0; padding:0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--dark); color: var(--text); min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 80% 40% at 50% 0%, #003d1a55 0%, transparent 70%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, var(--border) 39px, var(--border) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, var(--border) 39px, var(--border) 40px);
+  }
+  #root { min-height: 100vh; }
+  .display-font { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 800; }
+  .header { padding: 24px 20px 12px; text-align: center; }
+  .logo { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 800; font-size: 42px; letter-spacing: 4px; color: var(--green); line-height: 1; }
+  .logo span { color: var(--accent); }
+  .subtitle { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); padding: 0 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tab { padding: 12px 14px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; color: var(--muted); cursor: pointer; border: none; background: none; border-bottom: 2px solid transparent; white-space: nowrap; transition: all .2s; }
+  .tab.active { color: var(--green); border-bottom-color: var(--green); }
+
+  .page { padding: 16px; max-width: 600px; margin: 0 auto; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .card-title { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 800; font-size: 18px; letter-spacing: 2px; color: var(--green); margin-bottom: 12px; }
+
+  input[type=text], input[type=number], select {
+    background: #0d150d; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: inherit; font-size: 16px;
+    padding: 10px 12px; outline: none; transition: border .2s; width: 100%;
+  }
+  input:focus, select:focus { border-color: var(--green); }
+
+  .btn { border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 13px; letter-spacing: 1px; padding: 10px 18px; transition: all .15s; text-transform: uppercase; }
+  .btn-primary { background: var(--green); color: #000; }
+  .btn-danger { background: transparent; color: #ff5252; border: 1px solid #ff5252; }
+  .btn-sm { padding: 6px 12px; font-size: 11px; }
+  .btn-accent { background: var(--accent); color: #000; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  .type-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+  .type-card { border: 2px solid var(--border); border-radius: 12px; padding: 16px 12px; cursor: pointer; text-align: center; transition: all .2s; background: #0d150d; }
+  .type-card.selected { border-color: var(--green); background: #002200; }
+  .type-icon { font-size: 28px; margin-bottom: 6px; }
+  .type-name { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 800; font-size: 16px; letter-spacing: 2px; color: var(--text); }
+  .type-desc { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+
+  .team-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .team-row:last-child { border-bottom: none; }
+  .team-color { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .team-name-text { flex: 1; font-size: 14px; font-weight: 500; }
+
+  .row { display: flex; gap: 8px; align-items: center; }
+  .flex1 { flex: 1; }
+
+  .girone-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .girone-tab { padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all .15s; }
+  .girone-tab.active { color: #000; border-color: transparent; }
+
+  .match-card { background: #0d150d; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+  .match-done { border-color: #1a3a1a; }
+  .match-round { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .match-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+  .match-team-name { font-size: 13px; font-weight: 600; }
+  .match-team-a { text-align: right; }
+  .match-team-b { text-align: left; }
+  .score-inputs { display: flex; align-items: center; gap: 6px; }
+  .score-input { width: 44px !important; text-align: center; font-size: 18px; font-weight: 800; letter-spacing: 1px; padding: 6px 4px !important; }
+  .score-sep { color: var(--muted); font-size: 18px; font-weight: 800; }
+  .score-final { font-weight: 800; font-size: 26px; letter-spacing: 2px; color: var(--green); display: flex; gap: 4px; align-items: center; }
+
+  .standings-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .standings-table th { text-align: left; padding: 8px 6px; color: var(--muted); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  .standings-table td { padding: 10px 6px; border-bottom: 1px solid #131f13; }
+  .standings-table tr:last-child td { border-bottom: none; }
+  .rank { font-weight: 800; font-size: 18px; color: var(--muted); }
+  .rank-1 { color: var(--accent); }
+  .rank-2 { color: #c0c0c0; }
+  .rank-3 { color: #cd7f32; }
+  .pts-badge { background: var(--green); color: #000; font-weight: 700; padding: 2px 8px; border-radius: 20px; font-size: 12px; }
+
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 1px; }
+  .badge-done { background: #1a3a1a; color: var(--green); }
+  .badge-pending { background: #1e1e00; color: var(--accent); }
+
+  .section-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; margin-top: 16px; }
+
+  .pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .pill { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--border); color: var(--muted); cursor: pointer; border: none; }
+  .pill.active { background: var(--green); color: #000; }
+
+  .winner-banner { background: linear-gradient(135deg, #002200, #003300); border: 1px solid var(--green); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 16px; }
+  .winner-trophy { font-size: 48px; }
+  .winner-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin: 8px 0 4px; }
+  .winner-name { font-weight: 800; font-size: 36px; color: var(--accent); letter-spacing: 3px; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+  .stat-box { background: #0d150d; border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+  .stat-num { font-weight: 800; font-size: 28px; color: var(--green); }
+  .stat-lbl { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+
+  .confirm-overlay { position: fixed; inset: 0; background: #000a; display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .confirm-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 320px; width: 100%; }
+  .confirm-title { font-weight: 800; font-size: 22px; color: #ff5252; margin-bottom: 8px; }
+  .confirm-msg { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+  .confirm-btns { display: flex; gap: 8px; justify-content: flex-end; }
+
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  .tag-win { background: #002200; color: var(--green); }
+  .tag-draw { background: #1e1e00; color: var(--accent); }
+  .tag-loss { background: #220000; color: #ff5252; }
+
+  .assign-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .assign-btn { padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: #0d150d; color: var(--text); font-size: 12px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 6px; }
+  .assign-btn.assigned { border-color: var(--green); background: #001a00; }
+
+  .info-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { color: var(--muted); }
+  .info-value { font-weight: 600; }
+
+  .step-indicator { display: flex; align-items: center; gap: 0; margin-bottom: 20px; }
+  .step { display: flex; align-items: center; gap: 6px; }
+  .step-dot { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+  .step-dot.active { border-color: var(--green); color: var(--green); background: #001a00; }
+  .step-dot.done { border-color: var(--green); background: var(--green); color: #000; }
+  .step-label { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .step-label.active { color: var(--text); }
+  .step-line { flex: 1; height: 1px; background: var(--border); margin: 0 6px; }
+
+  .number-stepper { display: flex; align-items: center; gap: 8px; }
+  .stepper-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: #0d150d; color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .stepper-val { font-weight: 800; font-size: 24px; color: var(--green); min-width: 36px; text-align: center; }
+
+  .girone-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .girone-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .progress-bar { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 8px; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width .3s; }
+
+  .qualif-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; letter-spacing: 1px; background: #002200; color: var(--green); margin-left: 6px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+'use strict';
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+function uid() { return Math.random().toString(36).slice(2, 9); }
+
+function el(tag, props, children) {
+  props = props || {};
+  children = children || [];
+  var node = document.createElement(tag);
+  Object.keys(props).forEach(function(k) {
+    var v = props[k];
+    if (k === "class") node.className = v;
+    else if (k === "style" && typeof v === "object") Object.assign(node.style, v);
+    else if (k.indexOf("on") === 0 && typeof v === "function") node.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (v !== undefined && v !== null) node.setAttribute(k, v);
+  });
+  (Array.isArray(children) ? children : [children]).forEach(function(c) {
+    if (c === null || c === undefined || c === false) return;
+    node.appendChild(typeof c === "string" || typeof c === "number" ? document.createTextNode(c) : c);
+  });
+  return node;
+}
+function clearNode(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+
+function initStandings(teams) {
+  var acc = {};
+  teams.forEach(function(t) { acc[t.id] = { pts: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, name: t.name, id: t.id }; });
+  return acc;
+}
+
+function recalcStandings(matches, teams) {
+  var st = initStandings(teams);
+  matches.forEach(function(m) {
+    if (m.scoreA === "" || m.scoreB === "") return;
+    var a = parseInt(m.scoreA), b = parseInt(m.scoreB);
+    var stA = st[m.teamA], stB = st[m.teamB];
+    if (!stA || !stB) return;
+    stA.gf += a; stA.ga += b;
+    stB.gf += b; stB.ga += a;
+    if (a > b) { stA.pts += 3; stA.w++; stB.l++; }
+    else if (a < b) { stB.pts += 3; stB.w++; stA.l++; }
+    else { stA.pts += 1; stB.pts += 1; stA.d++; stB.d++; }
+  });
+  return Object.values(st).sort(function(a, b) {
+    return b.pts - a.pts || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf;
+  });
+}
+
+function generateRoundRobin(teams, rounds) {
+  rounds = rounds || 1;
+  var ts = teams.slice();
+  if (ts.length % 2 !== 0) ts.push({ id: "bye", name: "BYE" });
+  var n = ts.length;
+  var allMatches = [];
+  for (var rep = 0; rep < rounds; rep++) {
+    var repTeams = ts.slice();
+    for (var r = 0; r < n - 1; r++) {
+      for (var i = 0; i < n / 2; i++) {
+        var a = repTeams[i], b = repTeams[n - 1 - i];
+        if (a.id !== "bye" && b.id !== "bye") {
+          var rnd = rep * (n - 1) + r + 1;
+          allMatches.push({
+            id: uid(),
+            teamA: rep % 2 === 0 ? a.id : b.id,
+            teamB: rep % 2 === 0 ? b.id : a.id,
+            scoreA: "", scoreB: "", round: rnd
+          });
+        }
+      }
+      repTeams.splice(1, 0, repTeams.pop());
+    }
+  }
+  return allMatches;
+}
+
+function generateGironeMatches(teams, withReturn) {
+  return generateRoundRobin(teams, withReturn ? 2 : 1);
+}
+
+function computeQualified(gironi, matches, faseFinale) {
+  var result = new Map();
+  if (!gironi || !faseFinale) return result;
+  var qualPerGirone = faseFinale.qualPerGirone, qualMode = faseFinale.qualMode, qualMiglioriExtra = faseFinale.qualMiglioriExtra;
+
+  var gironeStandings = gironi.map(function(g) {
+    return { girone: g, standings: recalcStandings(matches.filter(function(m) { return m.gironeId === g.id; }), g.teams) };
+  });
+
+  gironeStandings.forEach(function(gs) {
+    gs.standings.slice(0, qualPerGirone).forEach(function(s, idx) {
+      result.set(s.id, { gironeId: gs.girone.id, posizione: idx + 1, viaMigliori: false });
+    });
+  });
+
+  if (qualMode === "migliori" && qualMiglioriExtra > 0) {
+    var remaining = [];
+    gironeStandings.forEach(function(gs) {
+      gs.standings.slice(qualPerGirone).forEach(function(s, idx) {
+        var copy = Object.assign({}, s, { gironeId: gs.girone.id, posizione: qualPerGirone + idx + 1 });
+        remaining.push(copy);
+      });
+    });
+    remaining.sort(function(a, b) { return b.pts - a.pts || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf; });
+    remaining.slice(0, qualMiglioriExtra).forEach(function(s) {
+      result.set(s.id, { gironeId: s.gironeId, posizione: s.posizione, viaMigliori: true });
+    });
+  }
+  return result;
+}
+
+var COLORS = ["#00c853","#ffe500","#2979ff","#ff6d00","#e040fb","#00bcd4","#ff1744","#76ff03","#ff80ab","#ea80fc","#84ffff","#ccff90"];
+var GIRONE_COLORS = ["#00c853","#2979ff","#ff6d00","#e040fb","#ff1744","#00bcd4","#76ff03","#ffe500"];
+
+// ─── Persistence ────────────────────────────────────────────────────────────
+var STORAGE_KEY = "torneo_calcetto_v2";
+function loadTournament() {
+  try { var s = localStorage.getItem(STORAGE_KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; }
+}
+function saveTournamentData(t) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(t)); } catch (e) {}
+}
+function clearTournamentData() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+}
+
+// ─── App State ──────────────────────────────────────────────────────────────
+var state = {
+  tournament: loadTournament(),
+  tab: "setup",
+  confirmOpen: false
+};
+state.tab = state.tournament ? "matches" : "setup";
+
+var setupState = {
+  step: 1,
+  torneoName: "",
+  tipo: null,
+  teams: [],
+  ritornoEnabled: false,
+  numGironi: 2,
+  teamsPerGirone: 4,
+  gironeRitorno: false,
+  gironeAssignments: {},
+  faseFinaleEnabled: false,
+  qualPerGirone: 2,
+  qualMode: "per_girone",
+  qualMiglioriExtra: 2,
+  matchesActiveGirone: null,
+  standingsActiveGirone: null,
+  teamsActiveGirone: null,
+  matchesFilter: "all"
+};
+
+function resetSetupState() {
+  setupState.step = 1;
+  setupState.torneoName = "";
+  setupState.tipo = null;
+  setupState.teams = [];
+  setupState.ritornoEnabled = false;
+  setupState.numGironi = 2;
+  setupState.teamsPerGirone = 4;
+  setupState.gironeRitorno = false;
+  setupState.gironeAssignments = {};
+  setupState.faseFinaleEnabled = false;
+  setupState.qualPerGirone = 2;
+  setupState.qualMode = "per_girone";
+  setupState.qualMiglioriExtra = 2;
+}
+
+var root = document.getElementById("root");
+
+function render() {
+  clearNode(root);
+  root.appendChild(buildApp());
+}
+
+function setTab(tab) { state.tab = tab; render(); }
+
+function saveTournament(t) {
+  saveTournamentData(t);
+  state.tournament = t;
+}
+
+// ─── Small Components ───────────────────────────────────────────────────────
+function ConfirmDialog(opts) {
+  return el("div", { class: "confirm-overlay" }, [
+    el("div", { class: "confirm-box" }, [
+      el("div", { class: "confirm-title" }, "⚠ " + opts.title),
+      el("div", { class: "confirm-msg" }, opts.msg),
+      el("div", { class: "confirm-btns" }, [
+        el("button", { class: "btn btn-outline", onClick: opts.onCancel }, "Annulla"),
+        el("button", { class: "btn btn-danger", onClick: opts.onConfirm }, "Conferma")
+      ])
+    ])
+  ]);
+}
+
+function NumberStepper(value, min, max, onChange) {
+  return el("div", { class: "number-stepper" }, [
+    el("button", { class: "stepper-btn", onClick: function() { onChange(Math.max(min, value - 1)); } }, "−"),
+    el("div", { class: "stepper-val" }, String(value)),
+    el("button", { class: "stepper-btn", onClick: function() { onChange(Math.min(max, value + 1)); } }, "+")
+  ]);
+}
+
+function Toggle(checked, onToggle) {
+  return el("div", {
+    style: {
+      width: "42px", height: "24px", borderRadius: "12px",
+      background: checked ? "var(--green)" : "var(--border)",
+      position: "relative", transition: "background .2s", cursor: "pointer"
+    },
+    onClick: onToggle
+  }, [
+    el("div", {
+      style: {
+        position: "absolute", top: "3px", left: checked ? "20px" : "3px",
+        width: "18px", height: "18px", borderRadius: "50%", background: "#fff", transition: "left .2s"
+      }
+    })
+  ]);
+}
+
+function InfoRow(labelNode, valueNode, opts) {
+  opts = opts || {};
+  return el("div", { class: "info-row", style: opts.noBorder ? { border: "none" } : {} }, [
+    typeof labelNode === "string" ? el("span", { class: "info-label" }, labelNode) : labelNode,
+    typeof valueNode === "string" ? el("span", { class: "info-value" }, valueNode) : valueNode
+  ]);
+}
+
+// ─── SETUP PAGE ──────────────────────────────────────────────────────────────
+function buildSetupPage(onSave) {
+  var s = setupState;
+  var totalTeamsNeeded = s.tipo === "multi_girone" ? s.numGironi * s.teamsPerGirone : 0;
+  function clampQual() { s.qualPerGirone = Math.min(s.qualPerGirone, Math.max(1, s.teamsPerGirone - 1)); }
+
+  var page = el("div", { class: "page" });
+
+  var stepInd = el("div", { class: "step-indicator" });
+  [1, 2, 3].forEach(function(num, i) {
+    var dotClass = s.step > num ? "step-dot done" : s.step === num ? "step-dot active" : "step-dot";
+    var lblClass = s.step === num ? "step-label active" : "step-label";
+    stepInd.appendChild(el("div", { class: "step" }, [
+      el("div", { class: dotClass }, s.step > num ? "✓" : String(num)),
+      el("span", { class: lblClass }, num === 1 ? "Tipo" : num === 2 ? "Squadre" : "Config")
+    ]));
+    if (i < 2) stepInd.appendChild(el("div", { class: "step-line" }));
+  });
+  page.appendChild(stepInd);
+
+  if (s.step === 1) {
+    page.appendChild(el("div", { class: "card" }, [
+      el("div", { class: "card-title" }, "⚽ Nome Torneo"),
+      el("input", {
+        type: "text", placeholder: "Es. Torneo Estate 2025", value: s.torneoName,
+        onInput: function(e) { s.torneoName = e.target.value; }
+      })
+    ]));
+
+    page.appendChild(el("div", { class: "card" }, [
+      el("div", { class: "card-title" }, "🏆 Tipo di Torneo"),
+      el("div", { class: "type-selector" }, [
+        el("div", {
+          class: "type-card" + (s.tipo === "girone_unico" ? " selected" : ""),
+          onClick: function() { s.tipo = "girone_unico"; render(); }
+        }, [
+          el("div", { class: "type-icon" }, "🔄"),
+          el("div", { class: "type-name" }, "Girone Unico"),
+          el("div", { class: "type-desc" }, "Tutte le squadre in un solo girone. Tutti contro tutti.")
+        ]),
+        el("div", {
+          class: "type-card" + (s.tipo === "multi_girone" ? " selected" : ""),
+          onClick: function() { s.tipo = "multi_girone"; render(); }
+        }, [
+          el("div", { class: "type-icon" }, "🏟"),
+          el("div", { class: "type-name" }, "Multi Girone"),
+          el("div", { class: "type-desc" }, "Più gironi separati con squadre e calendari distinti.")
+        ])
+      ])
+    ]));
+
+    var canGoStep2 = s.torneoName.trim() && s.tipo;
+    var btn1 = el("button", {
+      class: "btn btn-accent", style: { width: "100%", padding: "14px" },
+      onClick: function() { if (s.torneoName.trim() && s.tipo) { s.step = 2; render(); } }
+    }, "Avanti →");
+    if (!canGoStep2) btn1.disabled = true;
+    page.appendChild(btn1);
+  }
+
+  else if (s.step === 2) {
+    var card = el("div", { class: "card" });
+    card.appendChild(el("div", { class: "card-title" },
+      s.tipo === "multi_girone" ? ("👥 Squadre (necessarie: " + totalTeamsNeeded + ")") : ("👥 Squadre (" + s.teams.length + ")")));
+
+    if (s.tipo === "multi_girone") {
+      var box = el("div", { style: { marginBottom: "12px", padding: "10px 12px", background: "#0d150d", borderRadius: "8px", border: "1px solid var(--border)" } });
+      box.appendChild(el("div", { class: "row", style: { marginBottom: "8px" } }, [
+        el("span", { style: { color: "var(--muted)", fontSize: "13px", flex: "1" } }, "Numero gironi"),
+        NumberStepper(s.numGironi, 2, 8, function(v) { s.numGironi = v; render(); })
+      ]));
+      box.appendChild(el("div", { class: "row" }, [
+        el("span", { style: { color: "var(--muted)", fontSize: "13px", flex: "1" } }, "Squadre per girone"),
+        NumberStepper(s.teamsPerGirone, 2, 8, function(v) { s.teamsPerGirone = v; clampQual(); render(); })
+      ]));
+      box.appendChild(el("div", { style: { marginTop: "8px", fontSize: "12px", color: "var(--green)" } },
+        "⚡ Totale squadre richieste: " + (s.numGironi * s.teamsPerGirone)));
+      card.appendChild(box);
+    }
+
+    s.teams.forEach(function(t) {
+      card.appendChild(el("div", { class: "team-row" }, [
+        el("div", { class: "team-color", style: { background: t.color } }),
+        el("div", { class: "team-name-text" }, t.name),
+        el("button", {
+          class: "btn btn-danger btn-sm", onClick: function() {
+            s.teams = s.teams.filter(function(x) { return x.id !== t.id; });
+            delete s.gironeAssignments[t.id];
+            render();
+          }
+        }, "✕")
+      ]));
+    });
+
+    var maxTeams = s.tipo === "girone_unico" ? 24 : totalTeamsNeeded;
+    if (s.teams.length < maxTeams) {
+      var inputVal = "";
+      var addBtn;
+      var inputEl = el("input", {
+        class: "flex1", type: "text", placeholder: "Nome squadra…",
+        onInput: function(e) { inputVal = e.target.value; },
+        onKeydown: function(e) { if (e.key === "Enter") addBtn.click(); }
+      });
+      addBtn = el("button", {
+        class: "btn btn-primary", onClick: function() {
+          var n = inputVal.trim();
+          if (!n || s.teams.length >= maxTeams) return;
+          s.teams.push({ id: uid(), name: n, color: COLORS[s.teams.length % COLORS.length] });
+          render();
+        }
+      }, "+ Aggiungi");
+      card.appendChild(el("div", { class: "row", style: { marginTop: "12px" } }, [inputEl, addBtn]));
+    }
+    if (s.tipo === "multi_girone" && s.teams.length === totalTeamsNeeded) {
+      card.appendChild(el("div", { style: { marginTop: "8px", fontSize: "12px", color: "var(--green)" } }, "✓ Squadre sufficienti inserite"));
+    }
+    page.appendChild(card);
+
+    var canGoStep3 = s.teams.length >= (s.tipo === "multi_girone" ? s.numGironi * 2 : 2);
+    var nextBtn = el("button", { class: "btn btn-accent flex1", onClick: function() { if (canGoStep3) { s.step = 3; render(); } } }, "Avanti →");
+    if (!canGoStep3) nextBtn.disabled = true;
+    page.appendChild(el("div", { class: "row" }, [
+      el("button", { class: "btn btn-outline flex1", onClick: function() { s.step = 1; render(); } }, "← Indietro"),
+      nextBtn
+    ]));
+  }
+
+  else if (s.step === 3) {
+    if (s.tipo === "girone_unico") {
+      var cardGU = el("div", { class: "card" }, [
+        el("div", { class: "card-title" }, "⚙ Configurazione Girone"),
+        InfoRow("Squadre", String(s.teams.length)),
+        InfoRow("Partite totali (andata)", String((s.teams.length * (s.teams.length - 1)) / 2))
+      ]);
+      if (s.ritornoEnabled) {
+        cardGU.appendChild(InfoRow("Partite totali (andata+ritorno)", String(s.teams.length * (s.teams.length - 1))));
+      }
+      cardGU.appendChild(InfoRow("Andata e Ritorno",
+        el("label", { style: { display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" } }, [
+          el("span", { style: { fontSize: "12px", color: "var(--muted)" } }, s.ritornoEnabled ? "Sì" : "No"),
+          Toggle(s.ritornoEnabled, function() { s.ritornoEnabled = !s.ritornoEnabled; render(); })
+        ]), { noBorder: true }));
+      page.appendChild(cardGU);
+    } else {
+      var cfgCard = el("div", { class: "card" }, [
+        el("div", { class: "card-title" }, "⚙ Configurazione Gironi"),
+        el("p", { style: { fontSize: "12px", color: "var(--muted)", marginBottom: "12px", lineHeight: "1.6" } }, [
+          "Ogni squadra giocherà contro ",
+          el("strong", { style: { color: "var(--text)" } }, "tutte le altre"),
+          " squadre del proprio girone (round-robin completo)."
+        ])
+      ]);
+      for (var gi = 0; gi < s.numGironi; gi++) {
+        (function(gi) {
+          var gTeams = s.teams.filter(function(t) { return s.gironeAssignments[t.id] === gi; });
+          var n = gTeams.length;
+          var partiteAndata = n > 1 ? (n * (n - 1)) / 2 : 0;
+          var partiteTot = s.gironeRitorno ? partiteAndata * 2 : partiteAndata;
+          var labelWrap = el("span", { class: "info-label", style: { display: "flex", alignItems: "center", gap: "6px" } });
+          labelWrap.appendChild(el("div", { style: { width: "8px", height: "8px", borderRadius: "50%", background: GIRONE_COLORS[gi % GIRONE_COLORS.length], flexShrink: "0" } }));
+          labelWrap.appendChild(document.createTextNode("Girone " + String.fromCharCode(65 + gi) + " (" + n + " squadre)"));
+          cfgCard.appendChild(InfoRow(labelWrap,
+            el("span", { class: "info-value", style: { color: n > 1 ? "var(--green)" : "var(--muted)" } }, n > 1 ? (partiteTot + " partite") : "—")
+          ));
+        })(gi);
+      }
+      cfgCard.appendChild(InfoRow("Andata e Ritorno",
+        el("label", { style: { display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" } }, [
+          el("span", { style: { fontSize: "12px", color: "var(--muted)" } }, s.gironeRitorno ? "Sì" : "No"),
+          Toggle(s.gironeRitorno, function() { s.gironeRitorno = !s.gironeRitorno; render(); })
+        ]), { noBorder: true }));
+      page.appendChild(cfgCard);
+
+      var ffCard = el("div", { class: "card" }, [
+        el("div", { class: "card-title" }, "🏆 Fasi Finali"),
+        InfoRow("Attiva Fase Finale",
+          el("label", { style: { display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" } }, [
+            el("span", { style: { fontSize: "12px", color: "var(--muted)" } }, s.faseFinaleEnabled ? "Sì" : "No"),
+            Toggle(s.faseFinaleEnabled, function() { s.faseFinaleEnabled = !s.faseFinaleEnabled; render(); })
+          ]), { noBorder: !s.faseFinaleEnabled })
+      ]);
+
+      if (s.faseFinaleEnabled) {
+        ffCard.appendChild(el("p", { style: { fontSize: "12px", color: "var(--muted)", margin: "12px 0 10px", lineHeight: "1.6" } },
+          "Scegli quante squadre si qualificano e con quale criterio."));
+
+        ffCard.appendChild(el("div", { class: "type-selector", style: { marginBottom: "12px" } }, [
+          el("div", {
+            class: "type-card" + (s.qualMode === "per_girone" ? " selected" : ""),
+            onClick: function() { s.qualMode = "per_girone"; render(); }
+          }, [
+            el("div", { class: "type-icon" }, "🥇"),
+            el("div", { class: "type-name", style: { fontSize: "13px" } }, "Per Girone"),
+            el("div", { class: "type-desc" }, "Le prime N di ogni girone passano il turno.")
+          ]),
+          el("div", {
+            class: "type-card" + (s.qualMode === "migliori" ? " selected" : ""),
+            onClick: function() { s.qualMode = "migliori"; render(); }
+          }, [
+            el("div", { class: "type-icon" }, "📈"),
+            el("div", { class: "type-name", style: { fontSize: "13px" } }, "Migliori Classificate"),
+            el("div", { class: "type-desc" }, "Prime N per girone + un numero di \"migliori\" tra tutte le squadre rimaste.")
+          ])
+        ]));
+
+        ffCard.appendChild(InfoRow("Qualificate per girone",
+          NumberStepper(s.qualPerGirone, 1, Math.max(1, s.teamsPerGirone - 1), function(v) { s.qualPerGirone = v; render(); })));
+
+        if (s.qualMode === "migliori") {
+          ffCard.appendChild(InfoRow("Migliori aggiuntive",
+            NumberStepper(s.qualMiglioriExtra, 0, s.numGironi * 2, function(v) { s.qualMiglioriExtra = v; render(); }),
+            { noBorder: true }));
+        }
+
+        var totalQual = s.numGironi * s.qualPerGirone + (s.qualMode === "migliori" ? s.qualMiglioriExtra : 0);
+        ffCard.appendChild(el("div", {
+          style: { marginTop: "10px", padding: "10px 12px", background: "#0d150d", borderRadius: "8px", border: "1px solid var(--border)", fontSize: "12px", color: "var(--green)" }
+        }, "⚡ Totale qualificate: " + totalQual));
+      }
+      page.appendChild(ffCard);
+
+      var assignCard = el("div", { class: "card" }, [
+        el("div", { class: "card-title", style: { marginBottom: "8px" } }, "🔀 Assegna Gironi"),
+        el("p", { style: { fontSize: "12px", color: "var(--muted)", marginBottom: "10px" } },
+          "Assegna ogni squadra al suo girone, oppure usa l'assegnazione automatica."),
+        el("button", {
+          class: "btn btn-outline btn-sm", style: { marginBottom: "12px", width: "100%" },
+          onClick: function() {
+            var ga = {};
+            s.teams.forEach(function(t, i) { ga[t.id] = i % s.numGironi; });
+            s.gironeAssignments = ga;
+            render();
+          }
+        }, "⚡ Assegnazione Automatica")
+      ]);
+
+      for (var gi2 = 0; gi2 < s.numGironi; gi2++) {
+        (function(gi) {
+          var groupDiv = el("div", { style: { marginBottom: "12px" } });
+          groupDiv.appendChild(el("div", { class: "girone-header" }, [
+            el("div", { class: "girone-dot", style: { background: GIRONE_COLORS[gi % GIRONE_COLORS.length] } }),
+            el("span", { style: { fontWeight: "800", fontSize: "15px", letterSpacing: "2px", color: "var(--text)" } }, "Girone " + String.fromCharCode(65 + gi)),
+            el("span", { style: { marginLeft: "auto", fontSize: "11px", color: "var(--muted)" } },
+              s.teams.filter(function(t) { return s.gironeAssignments[t.id] === gi; }).length + "/" + s.teamsPerGirone)
+          ]));
+          var grid = el("div", { class: "assign-grid" });
+          s.teams.forEach(function(t) {
+            var assigned = s.gironeAssignments[t.id] === gi;
+            var assignedElse = s.gironeAssignments[t.id] !== undefined && s.gironeAssignments[t.id] !== gi;
+            var btn = el("button", {
+              class: "assign-btn" + (assigned ? " assigned" : ""),
+              style: { opacity: assignedElse ? "0.35" : "1" },
+              onClick: function() {
+                if (s.gironeAssignments[t.id] === gi) delete s.gironeAssignments[t.id];
+                else s.gironeAssignments[t.id] = gi;
+                render();
+              }
+            }, [
+              el("div", { class: "team-color", style: { background: t.color } }),
+              el("span", { style: { fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, t.name)
+            ]);
+            if (assigned) btn.appendChild(el("span", { style: { marginLeft: "auto", color: "var(--green)" } }, "✓"));
+            grid.appendChild(btn);
+          });
+          groupDiv.appendChild(grid);
+          assignCard.appendChild(groupDiv);
+        })(gi2);
+      }
+      page.appendChild(assignCard);
+    }
+
+    var canGenerate = s.tipo === "girone_unico"
+      ? s.teams.length >= 2
+      : Object.keys(s.gironeAssignments).length === s.teams.length && s.teams.length === totalTeamsNeeded;
+
+    var genBtn = el("button", {
+      class: "btn btn-accent flex1", onClick: function() {
+        if (!canGenerate) return;
+        if (s.tipo === "girone_unico") {
+          var matches = generateRoundRobin(s.teams, s.ritornoEnabled ? 2 : 1);
+          onSave({ name: s.torneoName.trim(), tipo: s.tipo, teams: s.teams, gironi: null, matches: matches });
+        } else {
+          var gironi = [];
+          for (var i = 0; i < s.numGironi; i++) {
+            gironi.push({
+              id: "g" + i, name: "Girone " + String.fromCharCode(65 + i), color: GIRONE_COLORS[i % GIRONE_COLORS.length],
+              teams: s.teams.filter(function(t) { return s.gironeAssignments[t.id] === i; })
+            });
+          }
+          var allMatches = [];
+          gironi.forEach(function(g) {
+            generateGironeMatches(g.teams, s.gironeRitorno).forEach(function(m) {
+              m.gironeId = g.id;
+              allMatches.push(m);
+            });
+          });
+          var faseFinale = s.faseFinaleEnabled ? { qualPerGirone: s.qualPerGirone, qualMode: s.qualMode, qualMiglioriExtra: s.qualMiglioriExtra } : null;
+          onSave({ name: s.torneoName.trim(), tipo: s.tipo, teams: s.teams, gironi: gironi, matches: allMatches, faseFinale: faseFinale });
+        }
+      }
+    }, "🏆 Genera Torneo");
+    if (!canGenerate) genBtn.disabled = true;
+    page.appendChild(el("div", { class: "row" }, [
+      el("button", { class: "btn btn-outline flex1", onClick: function() { s.step = 2; render(); } }, "← Indietro"),
+      genBtn
+    ]));
+  }
+
+  return page;
+}
+
+// ─── MATCHES PAGE ────────────────────────────────────────────────────────────
+function buildMatchesPage(tournament, onUpdate) {
+  var matches = tournament.matches, teams = tournament.teams, gironi = tournament.gironi, tipo = tournament.tipo;
+  if (setupState.matchesActiveGirone === null && gironi) setupState.matchesActiveGirone = gironi[0].id;
+  var teamsMap = {};
+  teams.forEach(function(t) { teamsMap[t.id] = t; });
+
+  function updateScore(id, field, val) {
+    tournament.matches = matches.map(function(m) {
+      if (m.id !== id) return m;
+      var copy = Object.assign({}, m);
+      copy[field] = val;
+      return copy;
+    });
+    onUpdate(tournament.matches);
+  }
+  function clearScore(id) {
+    tournament.matches = matches.map(function(m) {
+      if (m.id !== id) return m;
+      var copy = Object.assign({}, m);
+      copy.scoreA = ""; copy.scoreB = "";
+      return copy;
+    });
+    onUpdate(tournament.matches);
+    render();
+  }
+
+  var visibleMatches = tipo === "multi_girone" ? matches.filter(function(m) { return m.gironeId === setupState.matchesActiveGirone; }) : matches;
+  var filter = setupState.matchesFilter;
+  var filtered = visibleMatches.filter(function(m) {
+    if (filter === "done") return m.scoreA !== "" && m.scoreB !== "";
+    if (filter === "pending") return m.scoreA === "" || m.scoreB === "";
+    return true;
+  });
+
+  var done = matches.filter(function(m) { return m.scoreA !== "" && m.scoreB !== ""; }).length;
+  var progress = matches.length ? Math.round((done / matches.length) * 100) : 0;
+  var rounds = Array.from(new Set(filtered.map(function(m) { return m.round; }))).sort(function(a, b) { return a - b; });
+
+  var page = el("div", { class: "page" });
+
+  page.appendChild(el("div", { class: "stat-grid" }, [
+    el("div", { class: "stat-box" }, [el("div", { class: "stat-num" }, String(matches.length)), el("div", { class: "stat-lbl" }, "Totale")]),
+    el("div", { class: "stat-box" }, [el("div", { class: "stat-num", style: { color: "var(--accent)" } }, String(done)), el("div", { class: "stat-lbl" }, "Giocate")]),
+    el("div", { class: "stat-box" }, [el("div", { class: "stat-num", style: { color: "var(--muted)" } }, String(matches.length - done)), el("div", { class: "stat-lbl" }, "Da giocare")])
+  ]));
+  page.appendChild(el("div", { class: "progress-bar" }, [el("div", { class: "progress-fill", style: { width: progress + "%" } })]));
+  page.appendChild(el("div", { style: { textAlign: "right", fontSize: "11px", color: "var(--muted)", marginBottom: "12px", marginTop: "4px" } }, progress + "% completato"));
+
+  if (tipo === "multi_girone" && gironi) {
+    var tabs = el("div", { class: "girone-tabs" });
+    gironi.forEach(function(g) {
+      var active = setupState.matchesActiveGirone === g.id;
+      tabs.appendChild(el("button", {
+        class: "girone-tab" + (active ? " active" : ""),
+        style: active ? { background: g.color } : {},
+        onClick: function() { setupState.matchesActiveGirone = g.id; render(); }
+      }, g.name));
+    });
+    page.appendChild(tabs);
+  }
+
+  var pillRow = el("div", { class: "pill-row" });
+  [["all", "Tutte"], ["pending", "Da giocare"], ["done", "Giocate"]].forEach(function(pair) {
+    var v = pair[0], l = pair[1];
+    pillRow.appendChild(el("button", {
+      class: "pill" + (filter === v ? " active" : ""),
+      onClick: function() { setupState.matchesFilter = v; render(); }
+    }, l));
+  });
+  page.appendChild(pillRow);
+
+  if (filtered.length === 0) {
+    page.appendChild(el("div", { class: "empty" }, [el("div", { class: "empty-icon" }, "📋"), el("div", {}, "Nessuna partita da mostrare")]));
+  }
+
+  rounds.forEach(function(round) {
+    var rm = filtered.filter(function(m) { return m.round === round; });
+    if (!rm.length) return;
+    page.appendChild(el("div", { class: "section-label" }, "Giornata " + round));
+    rm.forEach(function(m) {
+      var tA = teamsMap[m.teamA], tB = teamsMap[m.teamB];
+      var isDone = m.scoreA !== "" && m.scoreB !== "";
+      var card = el("div", { class: "match-card" + (isDone ? " match-done" : "") });
+      card.appendChild(el("div", { class: "row", style: { marginBottom: "8px" } }, [
+        el("span", { class: "match-round" }, "Giornata " + m.round),
+        el("span", { style: { marginLeft: "auto" } }, [
+          el("span", { class: "badge " + (isDone ? "badge-done" : "badge-pending") }, isDone ? "✓ Giocata" : "In attesa")
+        ])
+      ]));
+      var teamsRow = el("div", { class: "match-teams" });
+      teamsRow.appendChild(el("div", {}, [
+        el("div", { class: "row", style: { justifyContent: "flex-end", gap: "6px" } }, [
+          el("div", { class: "match-team-name match-team-a" }, tA ? tA.name : ""),
+          el("div", { class: "team-color", style: { background: tA ? tA.color : "#000" } })
+        ])
+      ]));
+      var scoreBox = el("div", { class: "score-inputs" });
+      if (isDone) {
+        scoreBox.appendChild(el("div", { class: "score-final" }, [
+          el("span", {}, String(m.scoreA)), el("span", { class: "score-sep" }, "-"), el("span", {}, String(m.scoreB))
+        ]));
+      } else {
+        scoreBox.appendChild(el("input", {
+          class: "score-input", type: "number", min: "0", max: "99", value: m.scoreA, placeholder: "-",
+          onInput: function(e) { updateScore(m.id, "scoreA", e.target.value); }
+        }));
+        scoreBox.appendChild(el("span", { class: "score-sep" }, "-"));
+        scoreBox.appendChild(el("input", {
+          class: "score-input", type: "number", min: "0", max: "99", value: m.scoreB, placeholder: "-",
+          onInput: function(e) { updateScore(m.id, "scoreB", e.target.value); }
+        }));
+      }
+      teamsRow.appendChild(scoreBox);
+      teamsRow.appendChild(el("div", {}, [
+        el("div", { class: "row", style: { gap: "6px" } }, [
+          el("div", { class: "team-color", style: { background: tB ? tB.color : "#000" } }),
+          el("div", { class: "match-team-name match-team-b" }, tB ? tB.name : "")
+        ])
+      ]));
+      card.appendChild(teamsRow);
+      if (isDone) {
+        card.appendChild(el("div", { style: { textAlign: "right", marginTop: "8px" } }, [
+          el("button", { class: "btn btn-outline btn-sm", onClick: function() { clearScore(m.id); } }, "✏ Modifica")
+        ]));
+      }
+      page.appendChild(card);
+    });
+  });
+
+  return page;
+}
+
+// ─── STANDINGS PAGE ──────────────────────────────────────────────────────────
+function buildStandingsPage(tournament) {
+  var matches = tournament.matches, teams = tournament.teams, gironi = tournament.gironi, tipo = tournament.tipo, faseFinale = tournament.faseFinale;
+  if (setupState.standingsActiveGirone === null && gironi) setupState.standingsActiveGirone = gironi[0].id;
+
+  var currentTeams = tipo === "multi_girone" && gironi
+    ? ((gironi.find(function(g) { return g.id === setupState.standingsActiveGirone; }) || {}).teams || [])
+    : teams;
+  var currentMatches = tipo === "multi_girone" ? matches.filter(function(m) { return m.gironeId === setupState.standingsActiveGirone; }) : matches;
+  var standings = recalcStandings(currentMatches, currentTeams);
+
+  var allDone = matches.every(function(m) { return m.scoreA !== "" && m.scoreB !== ""; });
+  var anyDone = currentMatches.some(function(m) { return m.scoreA !== "" && m.scoreB !== ""; });
+  var winner = tipo === "girone_unico" && allDone && standings.length > 0 ? standings[0] : null;
+  var qualifiedMap = tipo === "multi_girone" ? computeQualified(gironi, matches, faseFinale) : new Map();
+
+  var page = el("div", { class: "page" });
+
+  if (winner) {
+    page.appendChild(el("div", { class: "winner-banner" }, [
+      el("div", { class: "winner-trophy" }, "🏆"),
+      el("div", { class: "winner-label" }, "Campione del Torneo"),
+      el("div", { class: "winner-name" }, winner.name)
+    ]));
+  }
+
+  if (tipo === "multi_girone" && gironi) {
+    var tabs = el("div", { class: "girone-tabs", style: { marginBottom: "12px" } });
+    gironi.forEach(function(g) {
+      var active = setupState.standingsActiveGirone === g.id;
+      tabs.appendChild(el("button", {
+        class: "girone-tab" + (active ? " active" : ""),
+        style: active ? { background: g.color } : {},
+        onClick: function() { setupState.standingsActiveGirone = g.id; render(); }
+      }, g.name));
+    });
+    page.appendChild(tabs);
+  }
+
+  if (!anyDone) {
+    page.appendChild(el("div", { class: "empty" }, [el("div", { class: "empty-icon" }, "📊"), el("div", {}, "Inserisci i risultati per vedere la classifica")]));
+  }
+
+  if (anyDone) {
+    var card = el("div", { class: "card" });
+    var header = el("div", { class: "girone-header", style: { marginBottom: "12px" } });
+    if (tipo === "multi_girone" && gironi) {
+      var g = gironi.find(function(x) { return x.id === setupState.standingsActiveGirone; });
+      if (g) {
+        header.appendChild(el("div", { class: "girone-dot", style: { background: g.color } }));
+        header.appendChild(el("div", { class: "card-title", style: { marginBottom: "0" } }, g.name));
+      }
+    } else {
+      header.appendChild(el("div", { class: "card-title", style: { marginBottom: "0" } }, "📊 Classifica"));
+    }
+    card.appendChild(header);
+
+    var table = el("table", { class: "standings-table" });
+    table.appendChild(el("thead", {}, [
+      el("tr", {}, ["#", "Squadra", "G", "V", "P", "S", "GD", "Pts"].map(function(h) { return el("th", {}, h); }))
+    ]));
+    var tbody = el("tbody");
+    standings.forEach(function(sRow, i) {
+      var team = teams.find(function(t) { return t.name === sRow.name; });
+      var played = sRow.w + sRow.d + sRow.l;
+      var qual = tipo === "multi_girone" ? qualifiedMap.get(sRow.id) : null;
+      var gd = sRow.gf - sRow.ga;
+      var rankCell = el("td", {}, [el("span", { class: "rank rank-" + (i + 1) }, String(i + 1))]);
+      if (qual) rankCell.appendChild(el("span", { class: "qualif-badge" }, qual.viaMigliori ? "M" : "Q"));
+      var teamCell = el("td", {}, [
+        el("div", { class: "row", style: { gap: "6px" } }, [
+          team ? el("div", { class: "team-color", style: { background: team.color } }) : null,
+          el("span", { style: { fontWeight: "600" } }, sRow.name)
+        ])
+      ]);
+      tbody.appendChild(el("tr", {}, [
+        rankCell, teamCell,
+        el("td", { style: { color: "var(--muted)" } }, String(played)),
+        el("td", {}, [el("span", { class: "tag tag-win" }, String(sRow.w))]),
+        el("td", {}, [el("span", { class: "tag tag-draw" }, String(sRow.d))]),
+        el("td", {}, [el("span", { class: "tag tag-loss" }, String(sRow.l))]),
+        el("td", { style: { color: gd > 0 ? "var(--green)" : gd < 0 ? "#ff5252" : "var(--muted)" } }, (gd > 0 ? "+" : "") + gd),
+        el("td", {}, [el("span", { class: "pts-badge" }, String(sRow.pts))])
+      ]));
+    });
+    table.appendChild(tbody);
+    card.appendChild(table);
+
+    if (tipo === "multi_girone" && faseFinale) {
+      card.appendChild(el("div", { style: { marginTop: "10px", fontSize: "11px", color: "var(--muted)" } },
+        "🏅 Q = Qualificato diretto" + (faseFinale.qualMode === "migliori" ? " · M = Qualificato come migliore classificata" : "")));
+    }
+    page.appendChild(card);
+  }
+
+  if (tipo === "multi_girone" && gironi && faseFinale) {
+    var summary = el("div", { class: "card", style: { marginTop: "8px" } }, [
+      el("div", { class: "card-title" }, "🏆 Squadre Qualificate")
+    ]);
+    gironi.forEach(function(g) {
+      var gMatches = matches.filter(function(m) { return m.gironeId === g.id; });
+      var gStandings = recalcStandings(gMatches, g.teams);
+      var qualInGirone = gStandings.filter(function(sRow) {
+        var q = qualifiedMap.get(sRow.id);
+        return q && !q.viaMigliori;
+      });
+      qualInGirone.forEach(function(sRow) {
+        var team = teams.find(function(t) { return t.name === sRow.name; });
+        summary.appendChild(el("div", { class: "team-row" }, [
+          el("div", { class: "girone-dot", style: { background: g.color, width: "12px", height: "12px", borderRadius: "4px" } }),
+          el("span", { style: { color: "var(--muted)", fontSize: "12px", minWidth: "60px" } }, g.name),
+          team ? el("div", { class: "team-color", style: { background: team.color } }) : null,
+          el("span", { style: { fontWeight: "600", flex: "1" } }, sRow.name),
+          el("span", { class: "pts-badge" }, sRow.pts + " pt")
+        ]));
+      });
+    });
+    if (faseFinale.qualMode === "migliori") {
+      var migliori = Array.from(qualifiedMap.entries()).filter(function(entry) { return entry[1].viaMigliori; });
+      if (migliori.length > 0) {
+        summary.appendChild(el("div", { class: "section-label", style: { marginTop: "12px" } }, "Migliori Classificate"));
+        migliori.forEach(function(entry) {
+          var teamId = entry[0], v = entry[1];
+          var team = teams.find(function(t) { return t.id === teamId; });
+          var g = gironi.find(function(x) { return x.id === v.gironeId; });
+          var gMatches = matches.filter(function(m) { return m.gironeId === v.gironeId; });
+          var gStandings = recalcStandings(gMatches, g.teams);
+          var sRow = gStandings.find(function(x) { return x.id === teamId; });
+          summary.appendChild(el("div", { class: "team-row" }, [
+            el("div", { class: "girone-dot", style: { background: g ? g.color : "#000", width: "12px", height: "12px", borderRadius: "4px" } }),
+            el("span", { style: { color: "var(--muted)", fontSize: "12px", minWidth: "60px" } }, g ? g.name : ""),
+            team ? el("div", { class: "team-color", style: { background: team.color } }) : null,
+            el("span", { style: { fontWeight: "600", flex: "1" } }, team ? team.name : ""),
+            el("span", { class: "pts-badge" }, (sRow ? sRow.pts : "—") + " pt")
+          ]));
+        });
+      }
+    }
+    if (!allDone) {
+      summary.appendChild(el("div", { style: { marginTop: "10px", fontSize: "11px", color: "var(--accent)" } },
+        "⚠ Il torneo non è ancora concluso: i qualificati possono cambiare."));
+    }
+    page.appendChild(summary);
+  }
+
+  return page;
+}
+
+// ─── TEAMS PAGE ──────────────────────────────────────────────────────────────
+function buildTeamsPage(tournament) {
+  var matches = tournament.matches, teams = tournament.teams, gironi = tournament.gironi, tipo = tournament.tipo;
+  if (setupState.teamsActiveGirone === null && gironi) setupState.teamsActiveGirone = gironi[0].id;
+
+  var currentTeams = tipo === "multi_girone" && gironi
+    ? ((gironi.find(function(g) { return g.id === setupState.teamsActiveGirone; }) || {}).teams || [])
+    : teams;
+  var currentMatches = tipo === "multi_girone" ? matches.filter(function(m) { return m.gironeId === setupState.teamsActiveGirone; }) : matches;
+  var standings = recalcStandings(currentMatches, currentTeams);
+
+  var page = el("div", { class: "page" });
+
+  if (tipo === "multi_girone" && gironi) {
+    var tabs = el("div", { class: "girone-tabs" });
+    gironi.forEach(function(g) {
+      var active = setupState.teamsActiveGirone === g.id;
+      tabs.appendChild(el("button", {
+        class: "girone-tab" + (active ? " active" : ""),
+        style: active ? { background: g.color } : {},
+        onClick: function() { setupState.teamsActiveGirone = g.id; render(); }
+      }, g.name));
+    });
+    page.appendChild(tabs);
+  }
+
+  standings.forEach(function(s, i) {
+    var team = teams.find(function(t) { return t.name === s.name; });
+    var played = s.w + s.d + s.l;
+    var card = el("div", { class: "card" }, [
+      el("div", { class: "row", style: { marginBottom: "12px", gap: "10px" } }, [
+        team ? el("div", { class: "team-color", style: { width: "16px", height: "16px", borderRadius: "4px", background: team.color } }) : null,
+        el("div", { style: { fontWeight: "800", fontSize: "20px", letterSpacing: "2px", flex: "1" } }, s.name),
+        el("span", { class: "rank rank-" + (i + 1), style: { fontSize: "22px" } }, "#" + (i + 1))
+      ]),
+      el("div", { class: "stat-grid" }, [
+        el("div", { class: "stat-box" }, [el("div", { class: "stat-num" }, String(s.pts)), el("div", { class: "stat-lbl" }, "Punti")]),
+        el("div", { class: "stat-box" }, [el("div", { class: "stat-num" }, String(played)), el("div", { class: "stat-lbl" }, "Giocate")]),
+        el("div", { class: "stat-box" }, [el("div", { class: "stat-num" }, String(s.gf)), el("div", { class: "stat-lbl" }, "Gol fatti")])
+      ]),
+      el("div", { class: "row", style: { gap: "6px" } }, [
+        el("span", { class: "tag tag-win", style: { flex: "1", textAlign: "center", padding: "6px 0" } }, "V " + s.w),
+        el("span", { class: "tag tag-draw", style: { flex: "1", textAlign: "center", padding: "6px 0" } }, "P " + s.d),
+        el("span", { class: "tag tag-loss", style: { flex: "1", textAlign: "center", padding: "6px 0" } }, "S " + s.l)
+      ])
+    ]);
+    page.appendChild(card);
+  });
+
+  return page;
+}
+
+// ─── ACTIVE TOURNAMENT (settings tab) ───────────────────────────────────────
+function buildActiveTournamentPanel(tournament, onReset) {
+  var page = el("div", { class: "page" });
+  var card = el("div", { class: "card" }, [
+    el("div", { class: "card-title" }, "⚙ Torneo Attivo"),
+    InfoRow("Nome", tournament.name),
+    InfoRow("Tipo", tournament.tipo === "multi_girone" ? "Multi Girone" : "Girone Unico"),
+    InfoRow("Squadre", String(tournament.teams.length)),
+    InfoRow("Partite", String(tournament.matches.length))
+  ]);
+  if (tournament.tipo === "multi_girone") {
+    card.appendChild(InfoRow("Gironi", String(tournament.gironi ? tournament.gironi.length : 0)));
+    var ff = tournament.faseFinale;
+    card.appendChild(InfoRow("Fase Finale",
+      ff ? (ff.qualPerGirone + "/girone" + (ff.qualMode === "migliori" ? (" + " + ff.qualMiglioriExtra + " migliori") : "")) : "Non attiva"));
+  }
+  card.appendChild(el("button", { class: "btn btn-danger", style: { width: "100%", marginTop: "16px" }, onClick: onReset }, "🗑 Elimina e Crea Nuovo Torneo"));
+  page.appendChild(card);
+  return page;
+}
+
+// ─── MAIN APP ────────────────────────────────────────────────────────────────
+function buildApp() {
+  var wrapper = el("div");
+
+  if (state.confirmOpen) {
+    wrapper.appendChild(ConfirmDialog({
+      title: "Reset Torneo",
+      msg: "Sei sicuro? Tutti i dati verranno eliminati definitivamente.",
+      onConfirm: function() {
+        clearTournamentData();
+        state.tournament = null;
+        resetSetupState();
+        state.tab = "setup";
+        state.confirmOpen = false;
+        render();
+      },
+      onCancel: function() { state.confirmOpen = false; render(); }
+    }));
+  }
+
+  var header = el("div", { class: "header" }, [
+    el("div", { class: "logo" }, ["Calcetto", el("span", {}, "5")]),
+    state.tournament
+      ? el("div", { class: "subtitle" }, state.tournament.name + " · " + (state.tournament.tipo === "multi_girone" ? ((state.tournament.gironi ? state.tournament.gironi.length : 0) + " Gironi") : "Girone Unico"))
+      : el("div", { class: "subtitle" }, "Gestione Torneo · 5 a Side")
+  ]);
+  wrapper.appendChild(header);
+
+  var tabsDef = state.tournament
+    ? [["matches", "📅 Partite"], ["standings", "📊 Classifica"], ["teams", "👥 Squadre"], ["setup", "⚙ Impost."]]
+    : [["setup", "⚽ Nuovo Torneo"]];
+
+  var tabsBar = el("div", { class: "tabs" });
+  tabsDef.forEach(function(pair) {
+    var id = pair[0], label = pair[1];
+    tabsBar.appendChild(el("button", { class: "tab" + (state.tab === id ? " active" : ""), onClick: function() { setTab(id); } }, label));
+  });
+  wrapper.appendChild(tabsBar);
+
+  if (state.tab === "setup") {
+    if (state.tournament) {
+      wrapper.appendChild(buildActiveTournamentPanel(state.tournament, function() { state.confirmOpen = true; render(); }));
+    } else {
+      wrapper.appendChild(buildSetupPage(function(data) {
+        saveTournament(data);
+        resetSetupState();
+        setupState.matchesActiveGirone = data.gironi ? data.gironi[0].id : null;
+        setupState.standingsActiveGirone = data.gironi ? data.gironi[0].id : null;
+        setupState.teamsActiveGirone = data.gironi ? data.gironi[0].id : null;
+        state.tab = "matches";
+        render();
+      }));
+    }
+  } else if (state.tab === "matches" && state.tournament) {
+    wrapper.appendChild(buildMatchesPage(state.tournament, function(matches) {
+      var updated = Object.assign({}, state.tournament, { matches: matches });
+      saveTournament(updated);
+    }));
+  } else if (state.tab === "standings" && state.tournament) {
+    wrapper.appendChild(buildStandingsPage(state.tournament));
+  } else if (state.tab === "teams" && state.tournament) {
+    wrapper.appendChild(buildTeamsPage(state.tournament));
+  }
+
+  return wrapper;
+}
+
+render();
+</script>
+</body>
+</html>
