@@ -720,6 +720,16 @@ function buildMatchesPage(tournament, onUpdate) {
       return copy;
     });
     onUpdate(tournament.matches);
+    matches = tournament.matches;
+    var updated = matches.find(function(m) { return m.id === id; });
+    if (updated && updated.scoreA !== "" && updated.scoreB !== "") {
+      // Entrambi i punteggi sono stati inseriti: aggiorna la vista (badge, classifica)
+      // al prossimo frame, così non si interrompe la digitazione in corso.
+      setTimeout(function() { render(); }, 0);
+    }
+  }
+  function refreshMatchesView() {
+    render();
   }
   function clearScore(id) {
     tournament.matches = matches.map(function(m) {
@@ -810,12 +820,16 @@ function buildMatchesPage(tournament, onUpdate) {
       } else {
         scoreBox.appendChild(el("input", {
           class: "score-input", type: "number", min: "0", max: "99", value: m.scoreA, placeholder: "-",
-          onInput: function(e) { updateScore(m.id, "scoreA", e.target.value); }
+          onInput: function(e) { updateScore(m.id, "scoreA", e.target.value); },
+          onChange: function() { refreshMatchesView(); },
+          onBlur: function() { refreshMatchesView(); }
         }));
         scoreBox.appendChild(el("span", { class: "score-sep" }, "-"));
         scoreBox.appendChild(el("input", {
           class: "score-input", type: "number", min: "0", max: "99", value: m.scoreB, placeholder: "-",
-          onInput: function(e) { updateScore(m.id, "scoreB", e.target.value); }
+          onInput: function(e) { updateScore(m.id, "scoreB", e.target.value); },
+          onChange: function() { refreshMatchesView(); },
+          onBlur: function() { refreshMatchesView(); }
         }));
       }
       teamsRow.appendChild(scoreBox);
